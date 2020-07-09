@@ -127,6 +127,7 @@ rankCommands.on(
               value: entry.value,
               level: xpToLevel(entry.value as number),
               next: levelToXp(xpToLevel(entry.value as number) + 1),
+              prev: levelToXp(xpToLevel(entry.value as number) - 1),
               tag: user?.getTag(),
               avatar: user?.getAvatarUrl()
             }))
@@ -151,14 +152,14 @@ rankCommands.on(
         const tag = Image.renderText(64, 0xfafbfcff, font, user.tag);
         const level = Image.renderText(64, 0xfafbfcff, font, \`LVL \${user.level}\`);
 
-        const xp = Image.renderText(42, 0xfbae40ff, font, \`\${user.value}/\${user.next} XP\`);
+        const xp = Image.renderText(42, 0xd6e0ffff, font, \`\${user.value.toLocaleString()} XP\`);
         if (tag.width > image.width - 35 - 40 - 64 - level.width) tag.resize(image.width - 35 - 40 - 64 - level.width, Image.RESIZE_AUTO);
 
         image.composite(tag, 20 + 64 + 15, 15 + (87 * index));
         image.composite(xp, image.width - 20 - xp.width, 55 + (87 * index));
-        image.composite(level, image.width - 20 - level.width, 15 + (87 * index));
-        image.drawBox(image.width - 20 - xp.width, 47 + xp.height + (87 * index),  Math.floor(user.value / user.next * xp.width), 5, 0x74b0f8ff);
-        image.drawBox(image.width - 20 - xp.width + Math.floor(user.value / user.next * xp.width), 47 + xp.height + (87 * index), xp.width - Math.floor(user.value / user.next * xp.width), 5, 0xe0e0ddff);
+        image.composite(level, image.width - 20 - level.width, 9 + (87 * index));
+        image.drawBox(image.width - 20 - level.width, 55 + (87 * index),  Math.floor((user.value - user.prev) / (user.next - user.prev) * level.width), 5, 0xF38020ff);
+        image.drawBox(image.width - 20 - level.width + Math.floor((user.value - user.prev) / (user.next - user.prev) * level.width), 55 + (87 * index), level.width - Math.floor((user.value - user.prev) / (user.next - user.prev) * level.width), 5, 0x6d6e71ff);
       });`;
 
       const request = await fetch('https://fapi.wrmsr.io/image_script', {
@@ -166,7 +167,7 @@ rankCommands.on(
           args: {
             text: code,
             inject: {
-              seed: randomBetween(5, 50),
+              seed: randomBetween(10, 50),
               top: JSON.stringify(top)
             }
           }
