@@ -37,7 +37,7 @@ const sendRankCard = async (
   image.composite(tag, 45 + avatar.width, 5);
   image.composite(level_text, 45 + avatar.width, tag.height - 15);
   image.composite(xp_text, image.width - 5 - xp_text.width, image.height - 35);
-  image.drawBox(0, image.height - 3, Math.floor(xp / next * image.width), 3, 0xfbae40ff);
+  image.drawBox(0, image.height - 4, Math.floor(xp / next * image.width), 4, 0xfbae40ff);
   image.drawBox(Math.floor((xp - prev) / (next - prev) * image.width), image.height - 4, image.width - Math.floor((xp - prev) / (next - prev) * image.width), 4, 0x6d6e71ff);
   `;
 
