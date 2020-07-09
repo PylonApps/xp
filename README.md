@@ -1,5 +1,5 @@
 # Pylon XP system
-To use this module in [Pylon](https://pylon.bot/), go to the editor, create a new file called `xp.ts` and then put the following in your `main.ts`:
+To use this module in [Pylon](https://pylon.bot/), go to the editor, create a new file called `xp.ts`, copy the contents of this repositorys `xp.ts` into it and then put the following in your `main.ts`:
 ```ts
 import './xp';
 ```
