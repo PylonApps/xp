@@ -36,7 +36,7 @@ const sendRankCard = async (
 
   image.fill(f);
 
-  const xp_text = Image.renderText(38, 0xfafbfcff, font, \`\${xp}/\${next} XP\`);
+  const xp_text = Image.renderText(38, 0xd6e0ffff, font, \`\${xp}/\${next} XP\`);
   const level_text = Image.renderText(115, 0xfafbfcff, font, \`LEVEL \${level}\`);
 
   image.composite(avatar, 20, 20);
