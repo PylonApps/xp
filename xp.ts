@@ -27,8 +27,14 @@ const sendRankCard = async (
   if(tag.width > image.width - 158)
     tag = tag.resize(image.width - 188, Image.RESIZE_AUTO);
 
-  const g = (x, y) => Math.sin(x ^ y) / Math.cos(y ^ x) / seed;
-  image.fill((x, y) => Image.rgbToColor(g(x, x), g(y, y), g(x, y)));
+  const averageColor = avatar.averageColor();
+
+  const f = (a,b) => {
+    if (seed % (a ^ b) > (a ^ b) * 0.96) return averageColor << 8 | 0xff;
+    return 0xff;
+  };
+
+  image.fill(f);
 
   const xp_text = Image.renderText(38, 0xfafbfcff, font, \`\${xp}/\${next} XP\`);
   const level_text = Image.renderText(115, 0xfafbfcff, font, \`LEVEL \${level}\`);
@@ -53,7 +59,7 @@ const sendRankCard = async (
             level: xpToLevel(xp),
             next: levelToXp(xpToLevel(xp) + 1),
             prev: levelToXp(xpToLevel(xp) - 1),
-            seed: (parseInt(user.discriminator) % 5) + 5
+            seed: (parseInt(user.id) % 1000) + 5
           }
         }
       }),
