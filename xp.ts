@@ -27,12 +27,14 @@ const sendRankCard = async (
   if(tag.width > image.width - 158)
     tag = tag.resize(image.width - 188, Image.RESIZE_AUTO);
 
-  const f = (a,b) => {
-  if (seed % (a ^ b) > (a ^ b) * 0.96) return avatar.averageColor() << 8 | 0xff
-  return 0xff
-  }
+  const averageColor = avatar.averageColor();
 
-  image.fill(f)
+  const f = (a,b) => {
+    if (seed % (a ^ b) > (a ^ b) * 0.96) return averageColor << 8 | 0xff;
+    return 0xff;
+  };
+
+  image.fill(f);
 
   const xp_text = Image.renderText(38, 0xfafbfcff, font, \`\${xp}/\${next} XP\`);
   const level_text = Image.renderText(115, 0xfafbfcff, font, \`LEVEL \${level}\`);
