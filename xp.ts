@@ -16,14 +16,13 @@ const sendRankCard = async (
 ) => {
   const code = `
   const image = Image.new(512, 170);
-
   avatar = Image.load(avatar).cropCircle();
   if (avatar.width !== 128)
     avatar.resize(128, 128);
 
   const font = Image.loadFont('BalooExtraBold');
 
-  tag = Image.renderText(52, 0xfafbfcff, font, tag);
+  tag = Image.renderText(26, 0xfafbfcff, font, tag);
   if(tag.width > image.width - 158)
     tag = tag.resize(image.width - 188, Image.RESIZE_AUTO);
 
@@ -33,15 +32,14 @@ const sendRankCard = async (
     if (seed % (a ^ b) > (a ^ b) * 0.96) return averageColor << 8 | 0xff;
     return 0xff;
   };
-
   image.fill(f);
 
-  const xp_text = Image.renderText(38, 0xd6e0ffff, font, \`\${xp}/\${next} XP\`);
-  const level_text = Image.renderText(115, 0xfafbfcff, font, \`LEVEL \${level}\`);
+  const xp_text = Image.renderText(20, 0xd6e0ffff, font, \`\${xp}/\${next} XP\`);
+  const level_text = Image.renderText(60, 0xfafbfcff, font, \`LEVEL \${level}\`);
 
   image.composite(avatar, 20, 20);
-  image.composite(tag, 45 + avatar.width, 5);
-  image.composite(level_text, 45 + avatar.width, tag.height - 15);
+  image.composite(tag, 180, image.height / 6 - tag.height / 2);
+  image.composite(level_text, 180, image.height / 2 - level_text.height / 2);
   image.composite(xp_text, image.width - 5 - xp_text.width, image.height - 35);
   image.drawBox(0, image.height - 4, Math.floor(xp / next * image.width), 4, 0xfbae40ff);
   image.drawBox(Math.floor((xp - prev) / (next - prev) * image.width), image.height - 4, image.width - Math.floor((xp - prev) / (next - prev) * image.width), 4, 0x6d6e71ff);
@@ -131,11 +129,13 @@ rankCommands.on(
           .map((entry) =>
             discord.getUser(entry.key).then((user) => ({
               value: entry.value,
+              tag: user?.getTag() || 'unknown#0000',
               level: xpToLevel(entry.value as number),
               next: levelToXp(xpToLevel(entry.value as number) + 1),
               prev: levelToXp(xpToLevel(entry.value as number) - 1),
-              tag: user?.getTag(),
-              avatar: user?.getAvatarUrl()
+              avatar:
+                user?.getAvatarUrl() ||
+                'https://cdn.discordapp.com/embed/avatars/1.png'
             }))
           )
       );
