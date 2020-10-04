@@ -155,15 +155,15 @@ rankCommands.on(
 
       const font = Image.loadFont('BalooExtraBold');
       top.forEach((user, index) => {
-        const tag = Image.renderText(64, 0xfafbfcff, font, user.tag);
-        const level = Image.renderText(64, 0xfafbfcff, font, \`LVL \${user.level}\`);
+        const tag = Image.renderText(32, 0xfafbfcff, font, user.tag);
+        const level = Image.renderText(32, 0xfafbfcff, font, \`LVL \${user.level}\`);
 
-        const xp = Image.renderText(42, 0xd6e0ffff, font, \`\${user.value.toLocaleString()} XP\`);
+        const xp = Image.renderText(21, 0xd6e0ffff, font, \`\${user.value.toLocaleString()} XP\`);
         if (tag.width > image.width - 35 - 40 - 64 - level.width) tag.resize(image.width - 35 - 40 - 64 - level.width, Image.RESIZE_AUTO);
 
-        image.composite(tag, 20 + 64 + 15, 15 + (87 * index));
-        image.composite(xp, image.width - 20 - xp.width, 55 + (87 * index));
-        image.composite(level, image.width - 20 - level.width, 9 + (87 * index));
+        image.composite(tag, 20 + 64 + 15, 32 + (87 * index));
+        image.composite(xp, image.width - 20 - xp.width, 64 + (87 * index));
+        image.composite(level, image.width - 20 - level.width, 24 + (87 * index));
         image.drawBox(image.width - 20 - level.width, 55 + (87 * index),  Math.floor((user.value - user.prev) / (user.next - user.prev) * level.width), 5, 0xF38020ff);
         image.drawBox(image.width - 20 - level.width + Math.floor((user.value - user.prev) / (user.next - user.prev) * level.width), 55 + (87 * index), level.width - Math.floor((user.value - user.prev) / (user.next - user.prev) * level.width), 5, 0x6d6e71ff);
       });`;
