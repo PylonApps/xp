@@ -15,14 +15,18 @@ const sendRankCard = async (
   levelUp: boolean = false
 ) => {
   const code = `
-  const image = Image.new(512, 170);
-  avatar = Image.load(avatar).cropCircle();
+  const image = new Image(512, 170);
+  let avatar = await fetch(avatarURL).then(r => r.arrayBuffer()).then(b => decode(b, true));
+  if(avatar instanceof GIF)
+    avatar = avatar[0];
+
   if (avatar.width !== 128)
     avatar.resize(128, 128);
+  avatar.cropCircle();
 
-  const font = Image.loadFont('BalooExtraBold');
+  const font = await fetch('https://raw.githubusercontent.com/PylonApps/xp/master/BalooExtraBold.ttf').then(r => r.arrayBuffer()).then(b => new Uint8Array(b));
 
-  tag = Image.renderText(26, 0xfafbfcff, font, tag);
+  tag = await Image.renderText(font, 26, tag, 0xfafbfcff);
   if(tag.width > image.width - 158)
     tag = tag.resize(image.width - 188, Image.RESIZE_AUTO);
 
@@ -34,8 +38,8 @@ const sendRankCard = async (
   };
   image.fill(f);
 
-  const xp_text = Image.renderText(20, 0xd6e0ffff, font, \`\${xp}/\${next} XP\`);
-  const level_text = Image.renderText(60, 0xfafbfcff, font, \`LEVEL \${level}\`);
+  const xp_text = await Image.renderText(font, 20, \`\${xp}/\${next} XP\`, 0xd6e0ffff);
+  const level_text = await Image.renderText(font, 60, \`LEVEL \${level}\`, 0xfafbfcff);
 
   image.composite(avatar, 20, 20);
   image.composite(tag, 180, image.height / 6 - tag.height / 2);
@@ -43,27 +47,27 @@ const sendRankCard = async (
   image.composite(xp_text, image.width - 5 - xp_text.width, image.height - 35);
   image.drawBox(0, image.height - 4, Math.floor(xp / next * image.width), 4, 0xfbae40ff);
   image.drawBox(Math.floor((xp - prev) / (next - prev) * image.width), image.height - 4, image.width - Math.floor((xp - prev) / (next - prev) * image.width), 4, 0x6d6e71ff);
+  
+  return image.encode();
   `;
 
   return message.reply(async () => {
-    const request = await fetch('https://fapi.wrmsr.io/image_script', {
+    const request = await fetch('https://api.pxlapi.dev/imagescript/1.2.5', {
       body: JSON.stringify({
-        args: {
-          text: code,
-          inject: {
-            avatar: user.getAvatarUrl(discord.ImageType.PNG),
-            tag: user.getTag(),
-            xp,
-            level: xpToLevel(xp),
-            next: levelToXp(xpToLevel(xp) + 1),
-            prev: levelToXp(xpToLevel(xp) - 1),
-            seed: (parseInt(user.id) % 1000) + 5
-          }
+        code,
+        inject: {
+          avatarURL: user.getAvatarUrl(discord.ImageType.PNG),
+          tag: user.getTag(),
+          xp,
+          level: xpToLevel(xp),
+          next: levelToXp(xpToLevel(xp) + 1),
+          prev: levelToXp(xpToLevel(xp) - 1),
+          seed: (parseInt(user.id) % 1000) + 5
         }
       }),
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${FAPI_TOKEN}`
+        Authorization: `Application ${PXLAPI_TOKEN}`
       },
       method: 'POST'
     });
@@ -142,8 +146,14 @@ rankCommands.on(
 
       const code = `
       top = JSON.parse(top);
-      const image = Image.new(700, 888);
-      const avatars = Image.loadMultiple(top.map(x => x.avatar));
+      const image = new Image(700, 888);
+      const avatars = await Promise.all(top.map(user => fetch(user.avatar).then(r => r.arrayBuffer()).then(async b => {
+          let image = await decode(b, true);
+          if(image instanceof GIF)
+            image = image[0];
+          return image;
+      })));
+
       const g = (x, y) => Math.sin(x ^ y) / Math.cos(y ^ x) / seed;
       image.fill((x, y) => Image.rgbToColor(g(x, x), g(y, y), g(x, y)));
 
@@ -153,34 +163,36 @@ rankCommands.on(
         image.composite(avatar, 20, 15 + (87 * index));
       });
 
-      const font = Image.loadFont('BalooExtraBold');
-      top.forEach((user, index) => {
-        const tag = Image.renderText(32, 0xfafbfcff, font, user.tag);
-        const level = Image.renderText(32, 0xfafbfcff, font, \`LVL \${user.level}\`);
+      const font = await fetch('https://raw.githubusercontent.com/PylonApps/xp/master/BalooExtraBold.ttf').then(r => r.arrayBuffer()).then(r => new Uint8Array(r));
+      for(let index = 0; index < top.length; index++) {
+        const user = top[index];
+        const tag = await Image.renderText(font, 32, user.tag, 0xfafbfcff);
+        const level = await Image.renderText(font, 32, \`LVL \${user.level}\`, 0xfafbfcff);
 
-        const xp = Image.renderText(21, 0xd6e0ffff, font, \`\${user.value.toLocaleString()} XP\`);
+        const xp = await Image.renderText(font, 21, \`\${user.value.toLocaleString()} XP\`, 0xd6e0ffff);
         if (tag.width > image.width - 35 - 40 - 64 - level.width) tag.resize(image.width - 35 - 40 - 64 - level.width, Image.RESIZE_AUTO);
 
-        image.composite(tag, 20 + 64 + 15, 32 + (87 * index));
-        image.composite(xp, image.width - 20 - xp.width, 64 + (87 * index));
-        image.composite(level, image.width - 20 - level.width, 24 + (87 * index));
+        image.composite(tag, 20 + 64 + 15, 20 + (87 * index));
+        image.composite(xp, image.width - 20 - xp.width, 58 + (87 * index));
+        image.composite(level, image.width - 20 - level.width, 12 + (87 * index));
         image.drawBox(image.width - 20 - level.width, 55 + (87 * index),  Math.floor((user.value - user.prev) / (user.next - user.prev) * level.width), 5, 0xF38020ff);
         image.drawBox(image.width - 20 - level.width + Math.floor((user.value - user.prev) / (user.next - user.prev) * level.width), 55 + (87 * index), level.width - Math.floor((user.value - user.prev) / (user.next - user.prev) * level.width), 5, 0x6d6e71ff);
-      });`;
+      };
+      
+      return image.encode();
+      `;
 
-      const request = await fetch('https://fapi.wrmsr.io/image_script', {
+      const request = await fetch('https://api.pxlapi.dev/imagescript/1.2.5', {
         body: JSON.stringify({
-          args: {
-            text: code,
-            inject: {
-              seed: randomBetween(10, 50),
-              top: JSON.stringify(top)
-            }
+          code,
+          inject: {
+            seed: randomBetween(10, 50),
+            top: JSON.stringify(top)
           }
         }),
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${FAPI_TOKEN}`
+          Authorization: `Application ${PXLAPI_TOKEN}`
         },
         method: 'POST'
       });
